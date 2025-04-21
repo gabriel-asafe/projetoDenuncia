@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Denúncias</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+</head>
+<body>
+    <div class="sidebar">
+        <img src="{% static 'denuncias/logotipo.png' %}" alt="Logo Denúncias Ambientais" class="logo">
+        <a href="/home/" class="btn"><i class="fas fa-chart-line"></i> Dashboard</a>
+        <a href="/denuncias/" class="btn"><i class="fas fa-list"></i> Listar Denúncias</a>
+        <a href="/cadastrar/" class="btn btn-denuncia"><i class="fas fa-plus"></i> Fazer uma Denúncia</a>
+        <a href="/logout/" class="btn"><i class="fas fa-sign-out-alt"></i> Sair</a>
+    </div>
+    
+
+<div class="main-content">
+    <div class="container">
+
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <h2>Total de Denúncias</h2>
+                    <p id="total-denuncias">Carregando...</p>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card">
+                    <h2>Denúncias Pendentes</h2>
+                    <p id="pendentes-denuncias">Carregando...</p>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card">
+                    <h2>Denúncias Concluídas</h2>
+                    <p id="concluidas-denuncias">Carregando...</p>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card">
+                    <h2>Denúncias Em Andamento</h2>
+                    <p id="andamento-denuncias">Carregando...</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="card">
+            <h2>Relação de Denúncias</h2>
+            <div class="chart-container">
+                <canvas id="relacaoChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Denúncias por Bairro</h2>
+            <table id="bairro-table">
+                <thead>
+                    <tr>
+                        <th>Bairro</th>
+                        <th>Total de Denúncias</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+            <div class="chart-container">
+                <canvas id="bairroChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>async function fetchData() {
+    try {
+        const response = await fetch('/dashboard/data/');
+        if (!response.ok) {
+            throw new Error('Erro ao carregar os dados: ' + response.status);
+        }
+        const data = await response.json();
+        
+        console.log(data);
+
+        document.getElementById('total-denuncias').textContent = data.total_denuncias ? data.total_denuncias + ' Denúncias' : '0 Denúncias';
+        document.getElementById('pendentes-denuncias').textContent = data.pendentes_denuncias ? data.pendentes_denuncias + ' Pendentes' : '0 Pendentes';
+        document.getElementById('concluidas-denuncias').textContent = data.concluidas_denuncias ? data.concluidas_denuncias + ' Concluídas' : '0 Concluídas';
+        document.getElementById('andamento-denuncias').textContent = data.andamento_denuncias ? data.andamento_denuncias + ' Em Andamento' : '0 Em Andamento';
+
+        const tbody = document.querySelector('#bairro-table tbody');
+        tbody.innerHTML = data.bairro_data.length > 0 ?
+            data.bairro_data.map(row => `
+                <tr>
+                    <td>${row.bairro}</td>
+                    <td>${row.total_bairro}</td>
+                </tr>
+            `).join('') : 
+            `<tr><td colspan="2">Nenhum dado encontrado</td></tr>`;
+
+        const relacaoData = {
+            labels: ['Pendentes', 'Em Andamento', 'Concluídas'],
+            datasets: [{
+                label: 'Denúncias',
+                data: [data.pendentes_denuncias, data.andamento_denuncias, data.concluidas_denuncias],
+                backgroundColor: ['#ffa726', '#ff7043', '#66bb6a'],
+                borderColor: ['#ffa726', '#ff7043', '#66bb6a'],
+                borderWidth: 1
+            }]
+        };
+
+        const bairroData = {
+            labels: data.bairro_data.map(row => row.bairro),
+            datasets: [{
+                label: 'Denúncias por Bairro',
+                data: data.bairro_data.map(row => row.total_bairro),
+                backgroundColor: '#42a5f5',
+                borderColor: '#42a5f5',
+                borderWidth: 1
+            }]
+        };
+
+        const relacaoCtx = document.getElementById('relacaoChart').getContext('2d');
+        new Chart(relacaoCtx, {
+            type: 'bar',
+            data: relacaoData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => `${context.label}: ${context.raw} Denúncias`
+                        }
+                    }
+                },
+                scales: {
+                    x: { beginAtZero: true },
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        const bairroCtx = document.getElementById('bairroChart').getContext('2d');
+        new Chart(bairroCtx, {
+            type: 'bar',
+            data: bairroData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => `${context.label}: ${context.raw} Denúncias`
+                        }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+
+        document.getElementById('total-denuncias').textContent = '0 Denúncias';
+        document.getElementById('pendentes-denuncias').textContent = '0 Pendentes';
+        document.getElementById('concluidas-denuncias').textContent = '0 Concluídas';
+        document.getElementById('andamento-denuncias').textContent = '0 Em Andamento';
+    }
+}  
+
+fetchData();
+
+
+
+</script>
+
+</body>
+</html>

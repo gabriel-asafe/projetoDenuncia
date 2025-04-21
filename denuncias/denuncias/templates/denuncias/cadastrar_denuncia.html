@@ -1,0 +1,222 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Denúncia de Crime Ambiental</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/fazer_denuncia.css' %}">
+    <style>
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1001;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+  
+    </style>
+</head>
+<body>
+
+    <button id="menu-toggle" class="menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="sidebar">
+        <img src="{% static 'denuncias/logotipo.png' %}" alt="Logo Denúncias Ambientais" class="logo">
+
+        <a href="{% url 'home' %}"><i class="fas fa-chart-line"></i> Dashboard</a>
+        <a href="{% url 'denuncias' %}"><i class="fas fa-list"></i> Listar Denúncias</a>
+        <a href="{% url 'cadastrar_denuncia' %}"><i class="fas fa-plus"></i> Fazer uma Denúncia</a>
+        <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Sair</a>
+    </div>
+    
+    <div class="main-content">
+        <div class="container">
+            <h2>Denúncia de Crime Ambiental</h2>
+            <form id="denunciaForm" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="form-columns">
+                    <fieldset>
+                        <legend>Informações do Crime</legend>
+                        <div class="form-group">
+                            <label for="tipo">Tipo de Crime Ambiental:</label>
+                            <select id="tipo" name="tipo" required class="form-control">
+                                <option value="desmatamento">Desmatamento</option>
+                                <option value="queimada">Queimada</option>
+                                <option value="poluicao">Poluição</option>
+                                <option value="caca_ilegal">Caça Ilegal</option>
+                                <option value="pesca_predatoria">Pesca Predatória</option>
+                                <option value="outro">Outro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="descricao">Descrição:</label>
+                            <textarea id="descricao" name="descricao" class="form-control" placeholder="Descreva a situação..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="data_ocorrencia">Data da Ocorrência:</label>
+                            <input type="date" id="data_ocorrencia" name="data_ocorrencia" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="hora_ocorrencia">Hora da Ocorrência:</label>
+                            <input type="time" id="hora_ocorrencia" name="hora_ocorrencia" class="form-control" required>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Informações Adicionais</legend>
+                          <div class="form-group">
+                            <label for="bairro">Bairro:</label>
+                            <select id="bairro" name="bairro" required>
+                                <option value="">Selecione o Bairro</option>
+                                <option value="Abaíra">Abaíra</option>
+                                <option value="Andaraí">Andaraí</option>
+                                <option value="Barra da Estiva">Barra da Estiva</option>
+                                <option value="Boninal">Boninal</option>
+                                <option value="Bonito">Bonito</option>
+                                <option value="Ibicoara">Ibicoara</option>
+                                <option value="Ibitiara">Ibitiara</option>
+                                <option value="Iramaia">Iramaia</option>
+                                <option value="Iraquara">Iraquara</option>
+                                <option value="Itaetê">Itaetê</option>
+                                <option value="Jussiape">Jussiape</option>
+                                <option value="Lençóis">Lençóis</option>
+                                <option value="Marcionílio Souza">Marcionílio Souza</option>
+                                <option value="Morro do Chapéu">Morro do Chapéu</option>
+                                <option value="Mucugê">Mucugê</option>
+                                <option value="Nova Redenção">Nova Redenção</option>
+                                <option value="Novo Horizonte">Novo Horizonte</option>
+                                <option value="Palmeiras">Palmeiras</option>
+                                <option value="Piatã">Piatã</option>
+                                <option value="Rio de Contas">Rio de Contas</option>
+                                <option value="Seabra">Seabra</option>
+                                <option value="Souto Soares">Souto Soares</option>
+                                <option value="Utinga">Utinga</option>
+                                <option value="Wagner">Wagner</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="bairro_outro">Caso o bairro seja "Outro", especifique:</label>
+                            <input type="text" id="bairro_outro" name="bairro_outro" class="form-control" placeholder="Especifique o bairro">
+                        </div>
+                        <div class="form-group">
+                            <label for="complemento">Complemento:</label>
+                            <input type="text" id="complemento" name="complemento" class="form-control" placeholder="Complemento do endereço">
+                        </div>
+                        <div class="form-group">
+                            <label for="contato_email">Seu E-mail (opcional):</label>
+                            <input type="email" id="contato_email" name="contato_email" class="form-control" placeholder="Seu e-mail">
+                        </div>
+                    </fieldset>
+                </div>
+
+                <fieldset>
+                    <legend>Mídias (Imagens e Vídeos)</legend>
+                    <div class="file-input-container">
+                        <label for="imagem">Imagem (opcional):</label>
+                        <input type="file" id="imagem" name="imagem" accept="image/*" class="form-control">
+                        <small>Formatos permitidos: JPEG, PNG, GIF. Tamanho máximo: 5 MB.</small>
+                    </div>
+                    <div class="file-input-container">
+                        <label for="video">Vídeo (opcional):</label>
+                        <input type="file" id="video" name="video" accept="video/*" class="form-control">
+                        <small>Formatos permitidos: MP4, AVI, MPEG. Tamanho máximo: 50 MB.</small>
+                    </div>
+                </fieldset>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Enviar Denúncia</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="overlay" id="overlay"></div>
+    <div class="popup" id="popup">
+        <p id="popupMessage"></p>
+        <button onclick="closePopup()">Fechar</button>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+
+    menuToggle.addEventListener('click', function () {
+        sidebar.classList.toggle('active');
+    });
+});
+
+function showPopup(message, isSuccess) {
+    const popup = document.getElementById('popup');
+    const overlay = document.getElementById('overlay');
+    const popupMessage = document.getElementById('popupMessage');
+
+    popupMessage.textContent = message;
+    popup.className = isSuccess ? 'popup success' : 'popup error';
+    popup.style.display = 'block';
+    overlay.style.display = 'block';
+}
+
+function closePopup() {
+    const popup = document.getElementById('popup');
+    const overlay = document.getElementById('overlay');
+    popup.style.display = 'none';
+    overlay.style.display = 'none';
+}
+
+document.getElementById('denunciaForm').addEventListener('submit', function (e) {
+    e.preventDefault(); 
+
+    const formData = new FormData(this);
+    fetch('{% url "cadastrar_denuncia" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Requested-With': 'XMLHttpRequest'  
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+           
+            showPopup(data.success, true);
+            document.getElementById('denunciaForm').reset();
+        } else if (data.error) {
+            
+            let errorMessage = '';
+            if (data.errors) {
+               
+                for (const field in data.errors) {
+                    errorMessage += `${field}: ${data.errors[field].join(', ')}\n`;
+                }
+            }
+            
+            showPopup(errorMessage, false);
+        }
+    })
+    .catch(error => {
+        showPopup('Erro ao enviar a denúncia. Tente novamente.', false);
+    });
+});
+
+    </script>
+</body>
+</html>

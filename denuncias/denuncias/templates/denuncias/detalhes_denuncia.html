@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalhes da Denúncia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/denuncia_detalhes.css' %}">
+</head>
+<body>
+<div class="sidebar">
+    <img src="{% static 'denuncias/logotipo.png' %}" alt="Logo Denúncias Ambientais" class="logo">
+    <a href="/home/" class="btn"><i class="fas fa-chart-line"></i> Dashboard</a>
+    <a href="/denuncias/" class="btn"><i class="fas fa-list"></i> Listar Denúncias</a>
+    <a href="/cadastrar/" class="btn btn-denuncia"><i class="fas fa-plus"></i> Fazer uma Denúncia</a>
+    <a href="/logout/" class="btn"><i class="fas fa-sign-out-alt"></i> Sair</a>
+</div>
+
+<div class="main-content">
+    <div class="container">
+        <a href="/denuncias/" class="btn"><i class="btn btn-denuncia"></i> Voltar</a>
+        <h2>Detalhes da Denúncia</h2>
+
+        <div class="content">
+            <div class="info">
+                
+                <p><strong>Tipo:</strong> {{ denuncia.get_tipo_display }}</p>
+                <p><strong>Bairro:</strong> 
+                    {% if denuncia.bairro %}{{ denuncia.bairro }}
+                    {% else %}{{ denuncia.bairro_outro }}
+                    {% endif %}
+                </p>
+                <p><strong>Data:</strong> {{ denuncia.data_ocorrencia }}</p>
+                <p><strong>Hora:</strong> {{ denuncia.hora_ocorrencia }}</p>
+                <p><strong>Descrição:</strong> {{ denuncia.descricao }}</p>
+
+
+                <div class="form-group">
+                    <label for="novoStatus">Alterar Status:</label>
+                    <select id="novoStatus">
+                        <option value="Pendente" {% if denuncia.status == "Pendente" %}selected{% endif %}>Pendente</option>
+                        <option value="Em Andamento" {% if denuncia.status == "Em Andamento" %}selected{% endif %}>Em Andamento</option>
+                        <option value="Concluído" {% if denuncia.status == "Concluído" %}selected{% endif %}>Concluído</option>
+                    </select>
+                    <button onclick="atualizarStatus()">Atualizar</button>
+                </div>
+            </div>
+
+            <div class="media-container">
+                {% if denuncia.imagem %}
+                    <img src="{{ denuncia.imagem.url }}" alt="Imagem da Denúncia">
+                {% endif %}
+                {% if denuncia.video %}
+                    <video controls>
+                        <source src="{{ denuncia.video.url }}" type="video/mp4">
+                        Seu navegador não suporta vídeos.
+                    </video>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<input type="hidden" id="csrf-token" value="{{ csrf_token }}">
+
+<script>
+    async function atualizarStatus() {
+        const novoStatus = document.getElementById("novoStatus").value;
+        const csrfToken = document.getElementById("csrf-token").value;
+
+        try {
+            const response = await fetch("{% url 'atualizar_status' denuncia.id %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken
+                },
+                body: JSON.stringify({ status: novoStatus })
+            });
+
+            if (response.ok) {
+                alert("Status atualizado com sucesso!");
+                document.getElementById("denunciaStatus").textContent = novoStatus;
+            } else {
+                alert("Erro ao atualizar status.");
+            }
+        } catch (error) {
+            console.error("Erro ao atualizar status:", error);
+        }
+    }
+</script>
+</body>
+</html>

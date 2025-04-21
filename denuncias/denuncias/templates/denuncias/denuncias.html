@@ -1,0 +1,97 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Listagem de Denúncias Ambientais</title>
+    <link rel="stylesheet" href="{% static 'css/denuncias.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="sidebar">
+        <img src="{% static 'denuncias/logotipo.png' %}" alt="Logo Denúncias Ambientais" class="logo">
+
+        <a href="/home/" class="btn"><i class="fas fa-chart-line"></i> Dashboard</a>
+        <a href="/denuncias/" class="btn"><i class="fas fa-list"></i> Listar Denúncias</a>
+        <a href="/cadastrar/" class="btn btn-denuncia"><i class="fas fa-plus"></i> Fazer uma Denúncia</a>
+        <a href="/logout/" class="btn"><i class="fas fa-sign-out-alt"></i> Sair</a>
+    </div>
+
+    <div class="main-content">
+        <h2>Listagem de Denúncias Ambientais</h2>
+
+        <div class="search-bar">
+            <form id="searchForm">
+                <input type="text" name="tipo" placeholder="Tipo de Denúncia" />
+                <input type="text" name="bairro" placeholder="Bairro" />
+                <select name="status">
+                    <option value="">Selecione o Status</option>
+                    <option value="Pendente">Pendente</option>
+                    <option value="Em Andamento">Em Andamento</option>
+                    <option value="Concluído">Concluído</option>
+                </select>
+                <button type="submit">Buscar</button>
+            </form>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tipo</th>
+                    <th>Bairro</th>
+                    <th>Data da Denúncia</th>
+                    <th>Status</th>
+                    <th>Detalhes</th>
+                </tr>
+            </thead>
+            <tbody id="denunciasTableBody">
+                
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function fetchDenuncias() {
+            const formData = new FormData(document.getElementById('searchForm'));
+const params = new URLSearchParams(formData).toString();
+
+try {
+        const response = await fetch(`/buscar-denuncias/?${params}`);
+        const denuncias = await response.json();
+
+        const tbody = document.getElementById('denunciasTableBody');
+        tbody.innerHTML = denuncias.map(denuncia => `
+            <tr>
+                <td>${denuncia.id}</td>
+               <td>${denuncia.tipo_display}</td>
+                <td>${denuncia.bairro || denuncia.bairro_outro}</td>
+                <td>${new Date(denuncia.data_denuncia).toLocaleDateString('pt-BR')}</td>
+                <td><span class="status ${getStatusClass(denuncia.status)}">${denuncia.status}</span></td>
+                <td class="actions">
+                    <a href="/denuncia/${denuncia.id}/" class="btn-ver">Ver <i class="fas fa-eye"></i></a>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Erro ao buscar denúncias:', error);
+    }}
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'Pendente': return 'status-pendente';
+                case 'Em Andamento': return 'status-em-andamento';
+                case 'Concluído': return 'status-concluido';
+                default: return '';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchDenuncias);
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            fetchDenuncias();
+        });
+    </script>
+</body>
+</html>
